@@ -1,11 +1,6 @@
 import re #import the regular expression module
 import pandas as pd #import pandas module
 
-
-
-
-
-
 # Load the data#
 
 #write code to read a text file line by line and store in lines variable 
@@ -40,13 +35,14 @@ def split_punctuations_braces(proto_word):
         if in_direct_quotes:
             new_data.append(word)
         else:
-            for char in [',', '-', '?', '!', '_', ':', ';', '(', '[', '{', '<', '>', '}', ']', \
-                         ')', '"', '“', '”', '‘', '’', '\'', '.', '\n']:
-                if char in word:
-                    new_data.extend(word.split(char))
-                    break
-            else:
-                new_data.append(word)
+            new_data.extend(re.split(r"[\-\?!_\:,;\(\[\{<>\}\]\)\"“”‘’'\.\n]", word))
+            # for char in [',', '-', '?', '!', '_', ':', ';', '(', '[', '{', '<', '>', '}', ']', \
+            #              ')', '"', '“', '”', '‘', '’', '\'', '.', '\n']:
+            #     if char in word:
+            #         new_data.extend(word.split(char))
+            #         break
+            # else:
+            #     new_data.append(word)
     return new_data
 
 # #create a function to change multie character words like "don't" to "do\x5t" and Mr. to Mr\x6
@@ -177,6 +173,42 @@ for line in lines:
         temp_words = remove_spaces_tabs_newlines(temp_words)
         temp_words = delete_empty_words(temp_words)
         words.extend(temp_words)
+#write temp_words to a file called temp_words.txt
+    with open('data/temp_words.txt', 'w') as file:
+        for word in temp_words:
+            file.write(f"{word}\n")
         # print(f"Words: {temp_words}")
     line_nr += 1
-print(f"Words: {words}")
+# print(f"Words: {words}")
+
+# write the words to a file name tokenized_words.txt
+with open('data/tokenized_words.txt', 'w') as file:
+    for word in words:
+        file.write(f"{word}\n")
+
+
+#write to create histogram of words, then store in histogram variable
+histogram = {}
+for word in words:
+    if word in histogram:
+        histogram[word] += 1
+    else:
+        histogram[word] = 1
+# print(f"Histogram: {histogram}")
+
+#order the historgram in descending order and store in ordered_histogram variable
+ordered_histogram = dict(sorted(histogram.items(), key=lambda item: item[1], reverse=True))
+#write ordered_histogram to a file called ordered_histogram.txt 
+with open('data/ordered_histogram.txt', 'w') as file:
+    for word, count in ordered_histogram.items():
+        file.write(f"{word}: {count}\n")
+
+
+#print top 10 words from the ordered_histogram
+# print(f"Top 10 words: {list(ordered_histogram.items())[:10]}")
+#write top 10 words to a file called top_10_words.txt
+with open('data/top_10_words.txt', 'w') as file:
+    for word, count in list(ordered_histogram.items())[:10]:
+        file.write(f"{word}: {count}\n")
+
+#close all file handles at the end
