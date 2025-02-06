@@ -4,218 +4,172 @@ import pandas as pd #import pandas module
 # Load the data#
 
 #write code to read a text file line by line and store in lines variable 
-lines = []
-with open('data/ti.txt', 'r') as file:
-    for line in file:
-        lines.append(line)
+class TextProcessor:
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.lines = self.load_data()
+        self.in_direct_quotes = False
+        self.words = []
 
-#create a static variable, called in_direct_qotes, and set it when encountering a '“' and unset it when encountering a '”'
-in_direct_quotes = False
+    def load_data(self):
+        lines = []
+        with open(self.file_path, 'r') as file:
+            for line in file:
+                lines.append(line)
+        return lines
 
-#write function that checks if beginning of a word is a quote, then set in_direct_quotes to True and if end of word containers a quote, then set in_direct_quotes to False
-def check_direct_quotes(proto_word):
-    global in_direct_quotes
-    if type(proto_word) != list:
-        proto_word = [proto_word]
-    for word in proto_word:
-        if '“' in word:
-            in_direct_quotes = True
-        elif '”' in word:
-            in_direct_quotes = False
-    return in_direct_quotes
+    def check_direct_quotes(self, proto_word):
+        if type(proto_word) != list:
+            proto_word = [proto_word]
+        for word in proto_word:
+            if '“' in word:
+                self.in_direct_quotes = True
+            elif '”' in word:
+                self.in_direct_quotes = False
+        return self.in_direct_quotes
 
-
-#write a function to observe each word and it contains a comma split into two words and add to the list
-def split_punctuations_braces(proto_word):
-    global in_direct_quotes
-    new_data = []
-    if type(proto_word) != list:
-        proto_word = [proto_word]
-    for word in proto_word:
-        if in_direct_quotes:
-            new_data.append(word)
-        else:
-            new_data.extend(re.split(r"([\-\?!_\:,;\(\[\{<>\}\]\)\"“”‘’'\.\n])", word))
-            # for char in [',', '-', '?', '!', '_', ':', ';', '(', '[', '{', '<', '>', '}', ']', \
-            #              ')', '"', '“', '”', '‘', '’', '\'', '.', '\n']:
-            #     if char in word:
-            #         new_data.extend(word.split(char))
-            #         break
-            # else:
-            #     new_data.append(word)
-    return new_data
-
-# #create a function to change multie character words like "don't" to "do\x5t" and Mr. to Mr\x6
-# def replace_multi_character_words(proto_word):
-#     new_data = []
-#     global in_direct_quotes
-#    for word in proto_word:
-#     if in_direct_quotes:
-#         new_data.append(word)
-#     else:
-#         if len(word) > 1:
-#             if word[1] in ['.', ',']:
-#                 new_data.append(word[0] + chr(ord(word[1]) + 2) + word[2:])
-#             else:
-#                 new_data.append(word)
-#         else:
-#             new_data.append(word)
-#     return new_data
-
-#create a regex that identifies words that contains an apostrophe within the word, then replace the apostrophe with a \x5 character
-def replace_apostrophes(proto_word):
-    global in_direct_quotes
-    new_data = []
-    if type(proto_word) != list:
-        proto_word = [proto_word]
-    for word in proto_word:
-        if in_direct_quotes:
-            new_data.append(word)
-        else:
-            if "'" in word:
-                new_data.append(re.sub(r"\'", "\x05", word))
-            elif "’" in word:
-                new_data.append(re.sub(r"’", "\x06", word))
+    def split_punctuations_braces(self, proto_word):
+        new_data = []
+        if type(proto_word) != list:
+            proto_word = [proto_word]
+        for word in proto_word:
+            if self.in_direct_quotes:
+                new_data.append(word)
             else:
-                new_data.append(word)
-    return new_data
+                new_data.extend(re.split(r"([\-\?!_\:,;\(\[\{<>\}\]\)\"“”‘’'\.\n])", word))
+        return new_data
 
-#create function with a dictionary of words like Mr. and Mrs. and replace them with Mr\x6 and Mrs\x6
-def replace_abbr(proto_word):
-    global in_direct_quotes
-    new_data = []
-    if type(proto_word) != list:
-        proto_word = [proto_word]
-    for word in proto_word:
-        if in_direct_quotes:
-            new_data.append(word)
-        else:
-            if word in ['Mr.', 'Mrs.', 'Dr.', 'Ms.', 'Jr.', 'St.', 'Co.', 'Inc.', 'Ltd.', 'Prof.', 'Sr.', 'Gen.', 'Rep.', 'Sen.', \
-                        'Rev.', 'Col.', 'Sgt.', 'Gov.', 'Lt.', 'Maj.', 'Capt.', 'Cpl.', 'Pvt.', 'Spc.', 'Cmdr.', 'Adm.', 'Ens.', \
-                        'Atty.', 'Hon.', 'Pres.', 'V.P.', 'Sec.', 'Treas.', 'Asst.', 'Mngr.', 'Mgr.', 'Dir.', 'Asso.', 'Assn.', \
-                        'Prof.', 'Ph.D.', 'M.D.', 'D.D.', 'D.V.M.', 'O.D.', 'D.D.S.', 'D.M.D.', 'D.O.', 'D.C.', 'D.P.M.', 'D.C.M.', \
-                        'D.C.L.', 'D.C.N.', 'D.C.P.', 'D.C.S.', 'D.C.T', 'N.A.', 'N.','E.','S.','W.',\
-                        'N.N.E.', 'N.N.W.', 'N.W.', 'S.E.', 'S.S.E.', 'S.S.W.', 'S.W.', 'W.S.W.', 'N.N.W.', \
-                        'N.E.', 'E.N.E.','E.S.E.', 'S.E.', 'S.S.E.', 'S.S.W.', 'S.W.', 'W.N.W.', 'P.P.S.','P.S.']:
-                new_data.append(re.sub(r"\.", "\x07", word))
+    def replace_apostrophes(self, proto_word):
+        new_data = []
+        if type(proto_word) != list:
+            proto_word = [proto_word]
+        for word in proto_word:
+            if self.in_direct_quotes:
+                new_data.append(word)
             else:
-                new_data.append(word)
-    return new_data
+                if "'" in word:
+                    new_data.append(re.sub(r"\'", "\x05", word))
+                elif "’" in word:
+                    new_data.append(re.sub(r"’", "\x06", word))
+                else:
+                    new_data.append(word)
+        return new_data
 
-#write a function revers all the \x5, \x6 and \x7 characters to their original characters
-def reverse_characters(proto_word):
-    global in_direct_quotes
-    new_data = []
-    if type(proto_word) != list:
-        proto_word = [proto_word]
-    for word in proto_word:
-        if in_direct_quotes:
-            new_data.append(word)
-        else:
-            if "\x05" in word:
-                new_data.append(re.sub(r"\x05", "'", word))
-            elif "\x06" in word:
-                new_data.append(re.sub(r"\x06", "’", word))
-            elif "\x07" in word:
-                new_data.append(re.sub(r"\x07", ".", word))
+    def replace_abbr(self, proto_word):
+        new_data = []
+        if type(proto_word) != list:
+            proto_word = [proto_word]
+        for word in proto_word:
+            if self.in_direct_quotes:
+                new_data.append(word)
             else:
+                if word in ['Mr.', 'Mrs.', 'Dr.', 'Ms.', 'Jr.', 'St.', 'Co.', 'Inc.', 'Ltd.', 'Prof.', 'Sr.', 'Gen.', 'Rep.', 'Sen.', \
+                            'Rev.', 'Col.', 'Sgt.', 'Gov.', 'Lt.', 'Maj.', 'Capt.', 'Cpl.', 'Pvt.', 'Spc.', 'Cmdr.', 'Adm.', 'Ens.', \
+                            'Atty.', 'Hon.', 'Pres.', 'V.P.', 'Sec.', 'Treas.', 'Asst.', 'Mngr.', 'Mgr.', 'Dir.', 'Asso.', 'Assn.', \
+                            'Prof.', 'Ph.D.', 'M.D.', 'D.D.', 'D.V.M.', 'O.D.', 'D.D.S.', 'D.M.D.', 'D.O.', 'D.C.', 'D.P.M.', 'D.C.M.', \
+                            'D.C.L.', 'D.C.N.', 'D.C.P.', 'D.C.S.', 'D.C.T', 'N.A.', 'N.','E.','S.','W.',\
+                            'N.N.E.', 'N.N.W.', 'N.W.', 'S.E.', 'S.S.E.', 'S.S.W.', 'S.W.', 'W.S.W.', 'N.N.W.', \
+                            'N.E.', 'E.N.E.','E.S.E.', 'S.E.', 'S.S.E.', 'S.S.W.', 'S.W.', 'W.N.W.', 'P.P.S.','P.S.']:
+                    new_data.append(re.sub(r"\.", "\x07", word))
+                else:
+                    new_data.append(word)
+        return new_data
+
+    def reverse_characters(self, proto_word):
+        new_data = []
+        if type(proto_word) != list:
+            proto_word = [proto_word]
+        for word in proto_word:
+            if self.in_direct_quotes:
                 new_data.append(word)
-    return new_data
+            else:
+                if "\x05" in word:
+                    new_data.append(re.sub(r"\x05", "'", word))
+                elif "\x06" in word:
+                    new_data.append(re.sub(r"\x06", "’", word))
+                elif "\x07" in word:
+                    new_data.append(re.sub(r"\x07", ".", word))
+                else:
+                    new_data.append(word)
+        return new_data
 
-#write a function to eat awau all spaces, tabs and newlines from the beginning and end of each word and return the word
-def remove_spaces_tabs_newlines(proto_word):
-    global in_direct_quotes
-    new_data = []
-    if type(proto_word) != list:
-        proto_word = [proto_word]
-    for word in proto_word:
-        if in_direct_quotes:
-            new_data.append(word)
-        else:
-            new_data.append(re.sub(r"^\s+|\s+$", "", word))
-    return new_data
-
-#write a function to delete all empty words from the list
-def delete_empty_words(proto_word):        
-    global in_direct_quotes
-    new_data = []
-    if type(proto_word) != list:
-        proto_word = [proto_word]
-    for word in proto_word:
-        if in_direct_quotes:
-            new_data.append(word)
-        else:
-            if word != '':
+    def remove_spaces_tabs_newlines(self, proto_word):
+        new_data = []
+        if type(proto_word) != list:
+            proto_word = [proto_word]
+        for word in proto_word:
+            if self.in_direct_quotes:
                 new_data.append(word)
-    return new_data
+            else:
+                new_data.append(re.sub(r"^\s+|\s+$", "", word))
+        return new_data
 
-#write code to split each line into words and store in words variable
-def print_line_nr(line_nr, line):
-    line_nr += 1
-    print(f"Line {line_nr}: {line}")
+    def delete_empty_words(self, proto_word):
+        new_data = []
+        if type(proto_word) != list:
+            proto_word = [proto_word]
+        for word in proto_word:
+            if self.in_direct_quotes:
+                new_data.append(word)
+            else:
+                if word != '':
+                    new_data.append(word)
+        return new_data
 
-def create_ordered_histogram(words):
-    # Create histogram of words (ignore case)
-    histogram = {}
-    for word in words:
-        word_lower = word.lower()
-        if word_lower in histogram:
-            histogram[word_lower] += 1
-        else:
-            histogram[word_lower] = 1
-    # Order the histogram in descending order
-    ordered_histogram = dict(sorted(histogram.items(), key=lambda item: item[1], reverse=True))
-    # Write ordered_histogram to a file called ordered_histogram.txt
-    with open('data/ordered_histogram.txt', 'w') as file:
-        for word, count in ordered_histogram.items():
-            file.write(f"{word}: {count}\n")
-    return ordered_histogram
+    def create_ordered_histogram(self, words):
+        histogram = {}
+        for word in words:
+            word_lower = word.lower()
+            if word_lower in histogram:
+                histogram[word_lower] += 1
+            else:
+                histogram[word_lower] = 1
+        ordered_histogram = dict(sorted(histogram.items(), key=lambda item: item[1], reverse=True))
+        with open('data/ordered_histogram.txt', 'w') as file:
+            for word, count in ordered_histogram.items():
+                file.write(f"{word}: {count}\n")
+        return ordered_histogram
 
-#create a variable words to store words from each line split by space
-words = []
-line_nr = 0
+    def process_lines(self):
+        line_nr = 0
+        for line in self.lines:
+            words_in_line = line.split()
+            for word in words_in_line:
+                self.check_direct_quotes(word)
+                temp_words = self.replace_abbr(word)
+                temp_words = self.replace_apostrophes(temp_words)
+                temp_words = self.split_punctuations_braces(temp_words)
+                temp_words = self.reverse_characters(temp_words)
+                temp_words = self.remove_spaces_tabs_newlines(temp_words)
+                temp_words = self.delete_empty_words(temp_words)
+                self.words.extend(temp_words)
+            with open('data/temp_words.txt', 'w') as file:
+                for word in temp_words:
+                    file.write(f"{word}\n")
+            line_nr += 1
 
-for line in lines:
-#write code to print line with line numbers
-    words_in_line = []
-#    print_line_nr(line_nr, line)
-    words_in_line =line.split()
-    for word in words_in_line:
-        in_quotes = check_direct_quotes(word)
-        temp_words = replace_abbr(word)
-        temp_words = replace_apostrophes(temp_words)
-        temp_words = split_punctuations_braces(temp_words)
-        temp_words = reverse_characters(temp_words)
-        temp_words = remove_spaces_tabs_newlines(temp_words)
-        temp_words = delete_empty_words(temp_words)
-        words.extend(temp_words)
-#write temp_words to a file called temp_words.txt
-    with open('data/temp_words.txt', 'w') as file:
-        for word in temp_words:
-            file.write(f"{word}\n")
-        # print(f"Words: {temp_words}")
-    line_nr += 1
-# print(f"Words: {words}")
 
-#count total number of words
-total_words = (len(words))
-print(f"Total number of words: {total_words}")
+    def save_results(self):
+        total_words = len(self.words)
+        print(f"Total number of words: {total_words}")
+        with open('data/tokenized_words.txt', 'w') as file:
+            for word in self.words:
+                file.write(f"{word}\n")
+        ordered_histogram = self.create_ordered_histogram(self.words)
+        with open('data/top_10_words.txt', 'w') as file:
+            count = 0
+            for word, freq in ordered_histogram.items():
+                if not re.match(r"^[\-\?!\:,;\"“”‘’'\.]$", word):  # Check if the word is not a punctuation mark
+                    file.write(f"{word}: {freq} & freq {freq/total_words:.1f}\n")
+                    count += 1
+                if count == 10:
+                    break
+        with open('data/top_20_words.txt', 'w') as file:
+            for word, count in list(ordered_histogram.items())[:20]:
+                file.write(f"{word}: {count} & freq {count/total_words:.5f}\n")
 
-# write the words to a file name tokenized_words.txt
-with open('data/tokenized_words.txt', 'w') as file:
-    for word in words:
-        file.write(f"{word}\n")
 
-# Call the function and store the result in ordered_histogram
-ordered_histogram = create_ordered_histogram(words)
-
-#print top 10 words from the ordered_histogram
-# print(f"Top 10 words: {list(ordered_histogram.items())[:10]}")
-#write top 10 words to a file called top_10_words.txt
-with open('data/top_10_words.txt', 'w') as file:
-    for word, count in list(ordered_histogram.items())[:10]:
-        file.write(f"{word}: {count} & freq {count/total_words:.6f}\n")
-
-#close all file handles at the end
-
-#convert the above file to class file and write a test file to test the class file
+if __name__ == "__main__":
+    processor = TextProcessor('data/ti.txt')
+    processor.process_lines()
+    processor.save_results()

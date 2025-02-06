@@ -56,3 +56,5 @@ nodeLanguageServer/**
 nodeLanguageServer.*/**
 dist/**
 data/out/**
+
+*.txt
