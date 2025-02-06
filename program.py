@@ -35,7 +35,7 @@ def split_punctuations_braces(proto_word):
         if in_direct_quotes:
             new_data.append(word)
         else:
-            new_data.extend(re.split(r"[\-\?!_\:,;\(\[\{<>\}\]\)\"“”‘’'\.\n]", word))
+            new_data.extend(re.split(r"([\-\?!_\:,;\(\[\{<>\}\]\)\"“”‘’'\.\n])", word))
             # for char in [',', '-', '?', '!', '_', ':', ';', '(', '[', '{', '<', '>', '}', ']', \
             #              ')', '"', '“', '”', '‘', '’', '\'', '.', '\n']:
             #     if char in word:
@@ -154,6 +154,22 @@ def print_line_nr(line_nr, line):
     line_nr += 1
     print(f"Line {line_nr}: {line}")
 
+def create_ordered_histogram(words):
+    # Create histogram of words (ignore case)
+    histogram = {}
+    for word in words:
+        word_lower = word.lower()
+        if word_lower in histogram:
+            histogram[word_lower] += 1
+        else:
+            histogram[word_lower] = 1
+    # Order the histogram in descending order
+    ordered_histogram = dict(sorted(histogram.items(), key=lambda item: item[1], reverse=True))
+    # Write ordered_histogram to a file called ordered_histogram.txt
+    with open('data/ordered_histogram.txt', 'w') as file:
+        for word, count in ordered_histogram.items():
+            file.write(f"{word}: {count}\n")
+    return ordered_histogram
 
 #create a variable words to store words from each line split by space
 words = []
@@ -181,34 +197,25 @@ for line in lines:
     line_nr += 1
 # print(f"Words: {words}")
 
+#count total number of words
+total_words = (len(words))
+print(f"Total number of words: {total_words}")
+
 # write the words to a file name tokenized_words.txt
 with open('data/tokenized_words.txt', 'w') as file:
     for word in words:
         file.write(f"{word}\n")
 
-
-#write to create histogram of words, then store in histogram variable
-histogram = {}
-for word in words:
-    if word in histogram:
-        histogram[word] += 1
-    else:
-        histogram[word] = 1
-# print(f"Histogram: {histogram}")
-
-#order the historgram in descending order and store in ordered_histogram variable
-ordered_histogram = dict(sorted(histogram.items(), key=lambda item: item[1], reverse=True))
-#write ordered_histogram to a file called ordered_histogram.txt 
-with open('data/ordered_histogram.txt', 'w') as file:
-    for word, count in ordered_histogram.items():
-        file.write(f"{word}: {count}\n")
-
+# Call the function and store the result in ordered_histogram
+ordered_histogram = create_ordered_histogram(words)
 
 #print top 10 words from the ordered_histogram
 # print(f"Top 10 words: {list(ordered_histogram.items())[:10]}")
 #write top 10 words to a file called top_10_words.txt
 with open('data/top_10_words.txt', 'w') as file:
     for word, count in list(ordered_histogram.items())[:10]:
-        file.write(f"{word}: {count}\n")
+        file.write(f"{word}: {count} & freq {count/total_words:.6f}\n")
 
 #close all file handles at the end
+
+#convert the above file to class file and write a test file to test the class file
