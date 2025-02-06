@@ -8,7 +8,7 @@ class TextProcessor:
     def __init__(self, file_path):
         self.file_path = file_path
         self.lines = self.load_data()
-        self.in_direct_quotes = False
+        self.is_narrated = False
         self.words = []
 
     def load_data(self):
@@ -18,22 +18,28 @@ class TextProcessor:
                 lines.append(line)
         return lines
 
-    def check_direct_quotes(self, proto_word):
+    def check_opening_quotes(self, proto_word):
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
             if '“' in word:
-                self.in_direct_quotes = True
-            elif '”' in word:
-                self.in_direct_quotes = False
-        return self.in_direct_quotes
+                self.is_narrated = True
+        return self.is_narrated
+
+    def check_closing_quotes(self, proto_word):
+        if type(proto_word) != list:
+            proto_word = [proto_word]
+        for word in proto_word:
+            if '”' in word and self.is_narrated:
+                self.is_narrated = False
+        return self.is_narrated
 
     def split_punctuations_braces(self, proto_word):
         new_data = []
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if self.in_direct_quotes:
+            if self.is_narrated:
                 new_data.append(word)
             else:
                 new_data.extend(re.split(r"([\-\?!_\:,;\(\[\{<>\}\]\)\"“”‘’'\.\n])", word))
@@ -44,7 +50,7 @@ class TextProcessor:
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if self.in_direct_quotes:
+            if self.is_narrated:
                 new_data.append(word)
             else:
                 if "'" in word:
@@ -60,7 +66,7 @@ class TextProcessor:
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if self.in_direct_quotes:
+            if self.is_narrated:
                 new_data.append(word)
             else:
                 if word in ['Mr.', 'Mrs.', 'Dr.', 'Ms.', 'Jr.', 'St.', 'Co.', 'Inc.', 'Ltd.', 'Prof.', 'Sr.', 'Gen.', 'Rep.', 'Sen.', \
@@ -80,7 +86,7 @@ class TextProcessor:
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if self.in_direct_quotes:
+            if self.is_narrated:
                 new_data.append(word)
             else:
                 if "\x05" in word:
@@ -98,7 +104,7 @@ class TextProcessor:
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if self.in_direct_quotes:
+            if self.is_narrated:
                 new_data.append(word)
             else:
                 new_data.append(re.sub(r"^\s+|\s+$", "", word))
@@ -109,7 +115,7 @@ class TextProcessor:
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if self.in_direct_quotes:
+            if self.is_narrated:
                 new_data.append(word)
             else:
                 if word != '':
@@ -134,14 +140,16 @@ class TextProcessor:
         line_nr = 0
         for line in self.lines:
             words_in_line = line.split()
+            temp_words = []
             for word in words_in_line:
-                self.check_direct_quotes(word)
+                self.check_opening_quotes(word)
                 temp_words = self.replace_abbr(word)
                 temp_words = self.replace_apostrophes(temp_words)
                 temp_words = self.split_punctuations_braces(temp_words)
                 temp_words = self.reverse_characters(temp_words)
                 temp_words = self.remove_spaces_tabs_newlines(temp_words)
                 temp_words = self.delete_empty_words(temp_words)
+                self.check_closing_quotes(word)
                 self.words.extend(temp_words)
             with open('data/temp_words.txt', 'w') as file:
                 for word in temp_words:
