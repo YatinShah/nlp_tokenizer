@@ -1,11 +1,9 @@
 import argparse
 
-import re #import the regular expression module
-import pandas as pd #import pandas module
+import re 
+import pandas as pd
 
-# Load the data#
 
-#write code to read a text file line by line and store in lines variable 
 class TextProcessor:
     def __init__(self, file_path):
         self.file_path = file_path
@@ -192,9 +190,9 @@ class TextProcessor:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Process text file.')
-    parser.add_argument('file_path', type=str, help='Path to the text file to be processed')
-    parser.add_argument('--no_narrate', action='store_true', help='Disable narration processing')
+    parser = argparse.ArgumentParser(description='Process a text file to generate tokens.')
+    parser.add_argument('file_path', type=str, help='Path to the text file to processed')
+    parser.add_argument('--no_narrate', action='store_true', help='Disable special handling of narration')
     args = parser.parse_args()
 
     processor = TextProcessor(args.file_path)
