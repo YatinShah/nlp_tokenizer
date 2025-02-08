@@ -1,3 +1,5 @@
+import argparse
+
 import re #import the regular expression module
 import pandas as pd #import pandas module
 
@@ -19,6 +21,8 @@ class TextProcessor:
         return lines
 
     def check_opening_quotes(self, proto_word):
+        if not self.do_narrated:
+            return self.is_narrated
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
@@ -27,6 +31,8 @@ class TextProcessor:
         return self.is_narrated
 
     def check_closing_quotes(self, proto_word):
+        if not self.do_narrated:
+            return self.is_narrated
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
@@ -151,7 +157,7 @@ class TextProcessor:
                 temp_words = self.delete_empty_words(temp_words)
                 self.check_closing_quotes(word)
                 self.words.extend(temp_words)
-            with open('data/temp_words.txt', 'w') as file:
+            with open('./temp_words.txt', 'w') as file:
                 for word in temp_words:
                     file.write(f"{word}\n")
             line_nr += 1
@@ -160,11 +166,11 @@ class TextProcessor:
     def save_results(self):
         total_words = len(self.words)
         print(f"Total number of words: {total_words}")
-        with open('data/tokenized_words.txt', 'w') as file:
+        with open('./tokenized_words.txt', 'w') as file:
             for word in self.words:
                 file.write(f"{word}\n")
         ordered_histogram = self.create_ordered_histogram(self.words)
-        with open('data/top_10_words.txt', 'w') as file:
+        with open('./top_10_words.txt', 'w') as file:
             count = 0
             for word, freq in ordered_histogram.items():
                 if not re.match(r"^[\-\?!\:,;\"“”‘’'\.]$", word):  # Check if the word is not a punctuation mark
@@ -172,12 +178,19 @@ class TextProcessor:
                     count += 1
                 if count == 10:
                     break
-        with open('data/top_20_words.txt', 'w') as file:
+        with open('./top_20_words.txt', 'w') as file:
             for word, count in list(ordered_histogram.items())[:20]:
                 file.write(f"{word}: {count} & freq {count/total_words:.5f}\n")
 
 
 if __name__ == "__main__":
-    processor = TextProcessor('data/ti.txt')
+    parser = argparse.ArgumentParser(description='Process text file.')
+    parser.add_argument('file_path', type=str, help='Path to the text file to be processed')
+    parser.add_argument('--no_narrate', action='store_true', help='Disable narration processing')
+    args = parser.parse_args()
+
+    processor = TextProcessor(args.file_path)
+    if args.no_narrate:
+        processor.do_narrated = False
     processor.process_lines()
     processor.save_results()
