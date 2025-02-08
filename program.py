@@ -9,6 +9,7 @@ class TextProcessor:
         self.file_path = file_path
         self.lines = self.load_data()
         self.is_narrated = False
+        self.do_narrated = True
         self.words = []
 
     def load_data(self):
