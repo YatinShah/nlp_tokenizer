@@ -139,7 +139,9 @@ class TextProcessor:
         ordered_histogram = dict(sorted(histogram.items(), key=lambda item: item[1], reverse=True))
         with open('data/ordered_histogram.txt', 'w') as file:
             for word, count in ordered_histogram.items():
-                file.write(f"{word}: {count}\n")
+                formatted_text = f"{word:<20} {count:>6}"
+                file.write(formatted_text + "\n")
+                print(formatted_text)
         return ordered_histogram
 
     def process_lines(self):
@@ -157,9 +159,9 @@ class TextProcessor:
                 temp_words = self.delete_empty_words(temp_words)
                 self.check_closing_quotes(word)
                 self.words.extend(temp_words)
-            with open('./temp_words.txt', 'w') as file:
-                for word in temp_words:
-                    file.write(f"{word}\n")
+            # with open('./temp_words.txt', 'w') as file:
+            #     for word in temp_words:
+            #         file.write(f"{word}\n")
             line_nr += 1
 
 
@@ -168,19 +170,25 @@ class TextProcessor:
         print(f"Total number of words: {total_words}")
         with open('./tokenized_words.txt', 'w') as file:
             for word in self.words:
-                file.write(f"{word}\n")
+                formatted_text = f"{word}"
+                file.write(formatted_text + "\n")
+                print(formatted_text)
         ordered_histogram = self.create_ordered_histogram(self.words)
         with open('./top_10_words.txt', 'w') as file:
             count = 0
             for word, freq in ordered_histogram.items():
                 if not re.match(r"^[\-\?!\:,;\"“”‘’'\.]$", word):  # Check if the word is not a punctuation mark
-                    file.write(f"{word}: {freq} & freq {freq/total_words:.1f}\n")
+                    formatted_text = f"word: {word:<20}, count:{freq:>6}, freq:{freq/total_words:>10.5f}"
+                    print(formatted_text)
+                    file.write(formatted_text + "\n")
                     count += 1
                 if count == 10:
                     break
         with open('./top_20_words.txt', 'w') as file:
             for word, count in list(ordered_histogram.items())[:20]:
-                file.write(f"{word}: {count} & freq {count/total_words:.5f}\n")
+                formatted_text = f"word:{word:<20}, count:{count:>6}, freq:{count*100/total_words:>10.5f}"
+                print(formatted_text)
+                file.write(formatted_text + "\n")
 
 
 if __name__ == "__main__":
