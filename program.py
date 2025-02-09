@@ -8,8 +8,8 @@ class TextProcessor:
     def __init__(self, file_path):
         self.file_path = file_path
         self.lines = self.load_data()
-        self.is_narrated = False
-        self.do_narrated = True
+        self.is_quoted = False
+        self.do_quoted = True
         self.words = []
 
     def load_data(self):
@@ -20,32 +20,32 @@ class TextProcessor:
         return lines
 
     def check_opening_quotes(self, proto_word):
-        if not self.do_narrated:
-            return self.is_narrated
+        if not self.do_quoted:
+            return self.is_quoted
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
             if '“' in word:
-                self.is_narrated = True
-        return self.is_narrated
+                self.is_quoted = True
+        return self.is_quoted
 
     def check_closing_quotes(self, proto_word):
-        if not self.do_narrated:
-            return self.is_narrated
+        if not self.do_quoted:
+            return self.is_quoted
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if '”' in word and self.is_narrated:
-                self.is_narrated = False
-        return self.is_narrated
+            if '”' in word and self.is_quoted:
+                self.is_quoted = False
+        return self.is_quoted
 
     def split_punctuations_braces(self, proto_word):
         new_data = []
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if self.is_narrated:
-                new_data.append(word)
+            if self.is_quoted:
+                new_data.extend(re.split(r"(.+”)", word))
             else:
                 new_data.extend(re.split(r"([\-\?!_\:,;\(\[\{<>\}\]\)\"“”‘’'\.\n])", word))
         return new_data
@@ -55,7 +55,7 @@ class TextProcessor:
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if self.is_narrated:
+            if self.is_quoted:
                 new_data.append(word)
             else:
                 if "'" in word:
@@ -71,7 +71,7 @@ class TextProcessor:
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if self.is_narrated:
+            if self.is_quoted:
                 new_data.append(word)
             else:
                 if word in ['Mr.', 'Mrs.', 'Dr.', 'Ms.', 'Jr.', 'St.', 'Co.', 'Inc.', 'Ltd.', 'Prof.', 'Sr.', 'Gen.', 'Rep.', 'Sen.', \
@@ -91,7 +91,7 @@ class TextProcessor:
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if self.is_narrated:
+            if self.is_quoted:
                 new_data.append(word)
             else:
                 if "\x05" in word:
@@ -109,10 +109,10 @@ class TextProcessor:
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if self.is_narrated:
-                new_data.append(word)
-            else:
-                new_data.append(re.sub(r"^\s+|\s+$", "", word))
+            # if self.is_quoted:
+            #     new_data.append(word)
+            # else:
+            new_data.append(re.sub(r"^\s+|\s+$", "", word))
         return new_data
 
     def delete_empty_words(self, proto_word):
@@ -120,11 +120,11 @@ class TextProcessor:
         if type(proto_word) != list:
             proto_word = [proto_word]
         for word in proto_word:
-            if self.is_narrated:
+        #     if self.is_quoted:
+        #         new_data.append(word)
+        #     else:
+            if word != '':
                 new_data.append(word)
-            else:
-                if word != '':
-                    new_data.append(word)
         return new_data
 
     def create_ordered_histogram(self, words):
@@ -193,11 +193,11 @@ class TextProcessor:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process a text file to generate tokens.')
     parser.add_argument('file_path', type=str, help='Path to the text file to processed')
-    parser.add_argument('--no_narrate', action='store_true', help='Disable special handling of narration')
+    parser.add_argument('--no_quote', action='store_true', help='Disable special handling of narration')
     args = parser.parse_args()
 
     processor = TextProcessor(args.file_path)
-    if args.no_narrate:
-        processor.do_narrated = False
+    if args.no_quote:
+        processor.do_quoted = False
     processor.process_lines()
     processor.save_results()
