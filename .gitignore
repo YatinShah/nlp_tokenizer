@@ -59,3 +59,5 @@ data/out/**
 
 *.txt
 *.tar
+*.zip
+*.tar.gz

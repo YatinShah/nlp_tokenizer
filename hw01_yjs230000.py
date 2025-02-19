@@ -136,7 +136,7 @@ class TextProcessor:
             else:
                 histogram[word_lower] = 1
         ordered_histogram = dict(sorted(histogram.items(), key=lambda item: item[1], reverse=True))
-        with open('data/ordered_histogram.txt', 'w') as file:
+        with open('ordered_histogram.txt', 'w') as file:
             for word, count in ordered_histogram.items():
                 formatted_text = f"{word:<20} {count:>6}"
                 file.write(formatted_text + "\n")
